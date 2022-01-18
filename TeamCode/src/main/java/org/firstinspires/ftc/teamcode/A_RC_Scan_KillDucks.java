@@ -271,14 +271,14 @@ public class A_RC_Scan_KillDucks extends LinearOpMode {
             robot.carousel.setPower(.7);
             sleep(4000);
             robot.carousel.setPower(0);
-            gyroStrafe(.5,-25,-90);
+            gyroStrafe(.5,-20,-90);
             gyroDrive(1,115,-90);
             retractFlipper(1);
         }
         else if(duckLocation.equals("middle")){
             gyroTurn(.5,-30);
             extendFlipper(1,state2Position);
-            gyroDrive(.5,16,-25);
+            gyroDrive(.5,17,-25);
             openClaw();
             openTurner();
             sleep(2000);
@@ -293,8 +293,8 @@ public class A_RC_Scan_KillDucks extends LinearOpMode {
             robot.carousel.setPower(.7);
             sleep(4000);
             robot.carousel.setPower(0);
-            gyroStrafe(.5,-25,-90);
-            gyroDrive(1,115,-90);
+            gyroStrafe(.5,-20,-90);
+            gyroDrive(1,110,-90);
             retractFlipper(1);
         }
         else{
