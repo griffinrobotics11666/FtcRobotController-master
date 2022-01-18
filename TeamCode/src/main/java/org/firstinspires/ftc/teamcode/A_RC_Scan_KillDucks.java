@@ -287,11 +287,15 @@ public class A_RC_Scan_KillDucks extends LinearOpMode {
             closeTurner();
             gyroTurn(.5,-90);
             gyroStrafe(.5,15,-90);
-            gyroDrive(.5,-25, -90);
-           // retractFlipper(1);
-
-
-            //gyroDrive(.5,5,0);
+            gyroDrive(.5,-20, -90);
+            gyroStrafe(.5,-3,-90);
+            gyroDrive(.5,-2,-90);
+            robot.carousel.setPower(.7);
+            sleep(4000);
+            robot.carousel.setPower(0);
+            gyroStrafe(.5,-25,-90);
+            gyroDrive(1,115,-90);
+            retractFlipper(1);
         }
         else{
             gyroTurn(.5,-20);
