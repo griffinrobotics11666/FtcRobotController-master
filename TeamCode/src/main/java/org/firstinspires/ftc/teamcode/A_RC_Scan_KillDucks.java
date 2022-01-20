@@ -52,7 +52,7 @@ import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
 
 import java.util.List;
 import java.util.Locale;
-
+//ON LINE LINE
 @com.qualcomm.robotcore.eventloop.opmode.Autonomous(name="RC_Scan_KillDucks", group="Pushbot")
 //@Disabled
 public class A_RC_Scan_KillDucks extends LinearOpMode {
@@ -263,16 +263,16 @@ public class A_RC_Scan_KillDucks extends LinearOpMode {
             closeTurner();
             gyroDrive(.5,-20,-30);
             gyroTurn(.5,-90);
-            gyroStrafe(1,10,-90);
-            gyroDrive(.5,-26,-90);
-            gyroStrafe(1,-5,-90);
-            gyroDrive(.5,-3,-90);
-            gyroStrafe(1,3,-90);
+            gyroDrive(.5,-32,-90);//-26
+            gyroStrafe(1,2,-90);//-5
+            //gyroDrive(.5,-3,-90);
+            //gyroStrafe(1,3,-90);
             robot.carousel.setPower(.7);
             sleep(4000);
             robot.carousel.setPower(0);
-            gyroStrafe(.5,-20,-90);
-            gyroDrive(1,115,-90);
+            gyroStrafe(.5,-18,-90);
+            //gyroStrafe(.5,-20,-90);
+            gyroDrive(1,110,-90);
             retractFlipper(1);
         }
         else if(duckLocation.equals("middle")){
@@ -302,21 +302,21 @@ public class A_RC_Scan_KillDucks extends LinearOpMode {
             retractFlipper(1);
         }
         else{
-            gyroTurn(.5,-20);
+            gyroTurn(.5,-15);
             extendFlipper(1,state1Position);
-            gyroDrive(.5,16,-20);
+            gyroDrive(1,16,-15);
             openClaw();
             sleep(2000);
-            gyroDrive(.5,-16,-20);
+            gyroDrive(1,-16,-15);
             closeClaw();
             gyroTurn(.5,-90);
-            //begin carousel
-
-
-            //drive to warehouse
-
-            gyroStrafe(.5,15,-90);
-            gyroDrive(.5,40, -90);
+            gyroDrive(.5,-32,-90);
+            gyroStrafe(.5,2,-90);
+            robot.carousel.setPower(.7);
+            sleep(4000);
+            robot.carousel.setPower(0);
+            gyroStrafe(.5,-18,-90);
+            gyroDrive(1,110,-90);
             retractFlipper(1);
         }
 

@@ -31,13 +31,14 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
+import org.firstinspires.ftc.robotcore.external.ClassFactory;
 import org.firstinspires.ftc.robotcore.external.Func;
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.Acceleration;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
@@ -45,17 +46,46 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.robotcore.external.navigation.Position;
 import org.firstinspires.ftc.robotcore.external.navigation.Velocity;
+import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
+import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
+import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
 
+import java.util.List;
 import java.util.Locale;
+
 //ON LINE LINE
-@com.qualcomm.robotcore.eventloop.opmode.Autonomous(name="RW_KillDucks_DriveAway", group="Pushbot")
-@Disabled
-public class A_RW_KillDucks_DriveAway extends LinearOpMode {
+@com.qualcomm.robotcore.eventloop.opmode.Autonomous(name="BC_Scan_KillDucks", group="Pushbot")
+//@Disabled
+public class A_BC_Scan_KillDucks extends LinearOpMode {
 
     Hardwarerobot robot   = new Hardwarerobot();
     BNO055IMU imu;
     Orientation angles;
     Acceleration gravity;
+
+    int ARM_COUNTS_PER_INCH=275*5;
+    int ROTATOR_COUNTERS_PER_DEGREE = 7;
+    int flipperState = 0;
+    int state0Position = 0;
+    public static int state1Position = 70;
+    int state2Position = 85;
+    public static int state3Position = 125;
+    public static double CLAW_CLOSED_POSITION=1; //Top Bucket
+    public static double CLAW_OPENED_POSITION=.7;
+    public static double TURNER_COLLECT_POSITION=.175;
+    public static double TURNER_DROP_POSITION=0;
+    boolean turnerIsDrop = false;
+    boolean aLastState = false;
+    boolean aCurrentState = false;
+    boolean bLastState = false;
+    boolean bCurrentState = false;
+    boolean clawIsOpen = false;
+    double lastExtendTime = 0;
+    double lastFlipperRetractTime = 0;
+    double lastFlipperExtendTime = 0;
+    double delayTime = 250;
+    double slowFactor = 3;
+    public static double carouselSpeed = 1;
 
     private ElapsedTime     runtime = new ElapsedTime();
 
@@ -63,16 +93,50 @@ public class A_RW_KillDucks_DriveAway extends LinearOpMode {
     static final double     DRIVE_GEAR_REDUCTION    = 1.0 ;
     static final double     WHEEL_DIAMETER_INCHES   = 4.5 ;
     static final double     COUNTS_PER_INCH         = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) /
-                                                      (WHEEL_DIAMETER_INCHES * 3.1415)/2.29;
+            (WHEEL_DIAMETER_INCHES * 3.1415)/2.29;
     static final double     STRAFE_COUNTS_PER_INCH  = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) /
             (WHEEL_DIAMETER_INCHES * 3.1415)/1.86;
     static final double     DRIVE_SPEED             = 0.6;
     static final double     TURN_SPEED              = 0.5;
 
-    static final double     HEADING_THRESHOLD       = 1 ;
+    static final double     HEADING_THRESHOLD       = .1 ;
     static final double     P_TURN_COEFF            = 0.1;
     static final double     P_DRIVE_COEFF           = 0.05;
 
+    private static final String TFOD_MODEL_ASSET = "FreightFrenzy_BCDM.tflite";
+    private static final String[] LABELS = {
+            "Ball",
+            "Cube",
+            "Duck",
+            "Marker"
+    };
+    String duckLocation = "left";
+    /*
+     * IMPORTANT: You need to obtain your own license key to use Vuforia. The string below with which
+     * 'parameters.vuforiaLicenseKey' is initialized is for illustration only, and will not function.
+     * A Vuforia 'Development' license key, can be obtained free of charge from the Vuforia developer
+     * web site at https://developer.vuforia.com/license-manager.
+     *
+     * Vuforia license keys are always 380 characters long, and look as if they contain mostly
+     * random data. As an example, here is a example of a fragment of a valid key:
+     *      ... yIgIzTqZ4mWjk9wd3cZO9T1axEqzuhxoGlfOOI2dRzKS4T0hQ8kT ...
+     * Once you've obtained a license key, copy the string from the Vuforia web site
+     * and paste it in to your code on the next line, between the double quotes.
+     */
+    private static final String VUFORIA_KEY =
+            "AdYYXLj/////AAABmbrz6/MNLUKlnU5JIPwkiDQ5jX+GIjfuIEgba3irGu46iS/W1Q9Z55uLSl31zGtBX3k5prkoSK6UxLR9gyvyIwSzRe2FOFGHEvJ19uG+pqiJJfkaRb0mCUkrx4U/fH6+Agp+7lOHB8IYjziNSuBMgABbrii5tAQiXOGfGojY+IQ/enBoy+zWiwVBx9cPRBsEHu+ipK6RXQe7CeODCRN8anBfAsn5b2BoO9lcGE0DgZdRysyByQ4wuwNQxKjba18fnzSDWpm12Brx3Ao1vkGYxTyLQfsON5VotphvWwoZpoyD+Iav/yQmOxrQDBLox6SosF8jqG9sUC5LAAdiRIWr6sNRrGzeCtsHSJBplHboPMB3";
+
+    /**
+     * {@link #vuforia} is the variable we will use to store our instance of the Vuforia
+     * localization engine.
+     */
+    private VuforiaLocalizer vuforia;
+
+    /**
+     * {@link #tfod} is the variable we will use to store our instance of the TensorFlow Object
+     * Detection engine.
+     */
+    private TFObjectDetector tfod;
 
     @Override
     public void runOpMode() {
@@ -82,7 +146,8 @@ public class A_RW_KillDucks_DriveAway extends LinearOpMode {
         telemetry.update();
 
         robot.leftFrontDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        robot.leftBackDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        robot.leftBackDrive.
+                setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         robot.rightFrontDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         robot.rightBackDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
@@ -92,10 +157,10 @@ public class A_RW_KillDucks_DriveAway extends LinearOpMode {
         robot.rightBackDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         telemetry.addData("Path0",  "Starting at %7d :%7d",
-                          robot.leftFrontDrive.getCurrentPosition(),
-                          robot.leftBackDrive.getCurrentPosition(),
-                          robot.rightFrontDrive.getCurrentPosition(),
-                          robot.rightBackDrive.getCurrentPosition());
+                robot.leftFrontDrive.getCurrentPosition(),
+                robot.leftBackDrive.getCurrentPosition(),
+                robot.rightFrontDrive.getCurrentPosition(),
+                robot.rightBackDrive.getCurrentPosition());
         telemetry.update();
 
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
@@ -109,28 +174,167 @@ public class A_RW_KillDucks_DriveAway extends LinearOpMode {
         imu = hardwareMap.get(BNO055IMU.class, "imu");
         imu.initialize(parameters);
         composeTelemetry();
-        waitForStart();
+        initVuforia();
+        initTfod();
+
+        /**
+         * Activate TensorFlow Object Detection before we wait for the start command.
+         * Do it here so that the Camera Stream window will have the TensorFlow annotations visible.
+         **/
+        if (tfod != null) {
+            tfod.activate();
+
+
+            // The TensorFlow software will scale the input images from the camera to a lower resolution.
+            // This can result in lower detection accuracy at longer distances (> 55cm or 22").
+            // If your target is at distance greater than 50 cm (20") you can adjust the magnification value
+            // to artificially zoom in to the center of image.  For best results, the "aspectRatio" argument
+            // should be set to the value of the images used to create the TensorFlow Object Detection model
+            // (typically 16/9).
+            tfod.setZoom(1, 16.0/9.0);
+        }
+
+        /** Wait for the game to begin */
+
+
+        //Have camera look at the field for some time
+        //If it finds a duck, stop and figure out where the duck is
+        //If it does not find a duck, keep looking until some time has elapsed.
+        //If it never finds a duck, assume some location (middle or something).
+        //Otherwise, do code for placing the block
         imu.startAccelerationIntegration(new Position(), new Velocity(), 1000);
         angles   = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
         gravity  = imu.getGravity();
+        telemetry.addData(">", "Press Play to start op mode");
+        telemetry.update();
+        waitForStart();
 
-        //start code
+
+        if (opModeIsActive()) {
+            runtime.reset();
+            //Look for the duck for 5 seconds
+            while (runtime.milliseconds()<5000) {
+                if (tfod != null) {
+                    // getUpdatedRecognitions() will return null if no new information is available since
+                    // the last time that call was made.
+                    List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
+                    if (updatedRecognitions != null) {
+                        telemetry.addData("# Object Detected", updatedRecognitions.size());
+                        // step through the list of recognitions and display boundary info.
+                        int i = 0;
+                        for (Recognition recognition : updatedRecognitions) {
+                            telemetry.addData(String.format("label (%d)", i), recognition.getLabel());
+                            telemetry.addData(String.format("  left,top (%d)", i), "%.03f , %.03f",
+                                    recognition.getLeft(), recognition.getTop());
+                            telemetry.addData(String.format("  right,bottom (%d)", i), "%.03f , %.03f",
+                                    recognition.getRight(), recognition.getBottom());
+                            if(recognition.getLabel().equals("Duck")){
+                                double duckPosition = recognition.getLeft();
+
+                                if (duckPosition > 200){
+                                    duckLocation = "right";
+                                }
+                                else if (duckPosition < 200){
+                                    duckLocation = "middle";
+                                }
+                                else {
+                                    duckLocation = "left";
+                                }
+                            }
+
+                            i++;
+                        }
+                        telemetry.addData("duckLocation: ",duckLocation);
+                        telemetry.update();
+                    }
+                }
+            }
+        }
+        //start code - after ducks looked for
+        closeClaw();
+        closeTurner();
+        if(duckLocation.equals("right")){
+            gyroTurn(.5,30);
+            extendFlipper(1,state3Position);
+            gyroDrive(.5,23,30);
+            openClaw();
+            openTurner();
+            sleep(2000);
+            closeClaw();
+            closeTurner();
+            gyroDrive(.5,-12,30);
+            gyroTurn(.5,90);
+            gyroDrive(.5,-28,90);//-26
+            gyroStrafe(1,-10,90);//-5
+            //gyroDrive(.5,-3,-90);
+            //gyroStrafe(1,3,-90);
+            robot.carousel.setPower(.7);
+            sleep(4000);
+            robot.carousel.setPower(0);
+            gyroStrafe(.5,-18,-90);
+            //gyroStrafe(.5,-20,-90);
+            gyroDrive(1,110,-90);
+            retractFlipper(1);
+        }
+        else if(duckLocation.equals("middle")){
+            gyroTurn(.5,-30);
+            extendFlipper(1,state2Position);
+            gyroDrive(.5,17,-25);
+            openClaw();
+            openTurner();
+            sleep(2000);
+            gyroDrive(.5,-16,-25);
+            closeClaw();
+            closeTurner();
+            gyroTurn(.5,-90);
+            //sleep(10000);
+            //
+            gyroDrive(.5,-32,-90);
+            //
+            gyroStrafe(.5,2,-90);
+            //gyroDrive(.5,-20, -90);
+            //gyroStrafe(.5,-3,-90);
+            //gyroDrive(.5,-2,-90);
+            robot.carousel.setPower(.7);
+            sleep(4000);
+            robot.carousel.setPower(0);
+            gyroStrafe(.5,-18,-90);
+            gyroDrive(1,110,-90);
+            retractFlipper(1);
+        }
+        else{
+            gyroTurn(.5,-15);
+            extendFlipper(1,state1Position);
+            gyroDrive(1,16,-15);
+            openClaw();
+            sleep(2000);
+            gyroDrive(1,-16,-15);
+            closeClaw();
+            gyroTurn(.5,-90);
+            gyroDrive(.5,-32,-90);
+            gyroStrafe(.5,2,-90);
+            robot.carousel.setPower(.7);
+            sleep(4000);
+            robot.carousel.setPower(0);
+            gyroStrafe(.5,-18,-90);
+            gyroDrive(1,110,-90);
+            retractFlipper(1);
+        }
 
 
-        gyroDrive(.5, -67, 0);
-        gyroStrafe(.5,-5,0);
-        gyroDrive(.5,-4,0);
-        robot.carousel.setPower(.5);
-        sleep(4000);
-        gyroDrive(.5,3,0);
-        gyroStrafe(.5,5,0);
-        gyroDrive(.5,103,0);
+        sleep(1000); //delay before starting (variable)
+        //gyroDrive(.5, 52, 0);
         //gyroTurn(.5, -90);
         //gyroDrive(.5, 18, -90);
 
         telemetry.addData("Path", "Complete");
         telemetry.update();
     }
+
+
+
+
+
     public void encoderDrive(double speed,
                              double distance,
                              double timeoutS) {
@@ -168,15 +372,15 @@ public class A_RW_KillDucks_DriveAway extends LinearOpMode {
             robot.rightBackDrive.setPower(Math.abs(speed));
 
             while (opModeIsActive() &&
-                   (runtime.seconds() < timeoutS) &&
-                   (robot.leftFrontDrive.isBusy() && robot.rightFrontDrive.isBusy() && (robot.leftBackDrive.isBusy() && robot.rightBackDrive.isBusy()))) {
+                    (runtime.seconds() < timeoutS) &&
+                    (robot.leftFrontDrive.isBusy() && robot.rightFrontDrive.isBusy() && (robot.leftBackDrive.isBusy() && robot.rightBackDrive.isBusy()))) {
 
                 telemetry.addData("Path1",  "Running to %7d :%7d", newLeftFrontTarget, newLeftBackTarget, newRightFrontTarget, newRightBackTarget);
                 telemetry.addData("Path2",  "Running at %7d :%7d",
-                                            robot.leftFrontDrive.getCurrentPosition(),
-                                            robot.leftBackDrive.getCurrentPosition(),
-                                            robot.rightFrontDrive.getCurrentPosition(),
-                                            robot.rightBackDrive.getCurrentPosition());
+                        robot.leftFrontDrive.getCurrentPosition(),
+                        robot.leftBackDrive.getCurrentPosition(),
+                        robot.rightFrontDrive.getCurrentPosition(),
+                        robot.rightBackDrive.getCurrentPosition());
                 telemetry.update();
             }
             robot.leftFrontDrive.setPower(0);
@@ -462,5 +666,144 @@ public class A_RW_KillDucks_DriveAway extends LinearOpMode {
             robot.rightFrontDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             robot.rightBackDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         }
+    }
+    private void initVuforia() {
+        /*
+         * Configure Vuforia by creating a Parameter object, and passing it to the Vuforia engine.
+         */
+        VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters();
+
+        parameters.vuforiaLicenseKey = VUFORIA_KEY;
+        parameters.cameraName = hardwareMap.get(WebcamName.class, "Webcam 1");
+
+        //  Instantiate the Vuforia engine
+        vuforia = ClassFactory.getInstance().createVuforia(parameters);
+
+        // Loading trackables is not necessary for the TensorFlow Object Detection engine.
+    }
+
+    /**
+     * Initialize the TensorFlow Object Detection engine.
+     */
+    private void initTfod() {
+        int tfodMonitorViewId = hardwareMap.appContext.getResources().getIdentifier(
+                "tfodMonitorViewId", "id", hardwareMap.appContext.getPackageName());
+        TFObjectDetector.Parameters tfodParameters = new TFObjectDetector.Parameters(tfodMonitorViewId);
+        tfodParameters.minResultConfidence = 0.8f;
+        tfodParameters.isModelTensorFlow2 = true;
+        tfodParameters.inputSize = 320;
+        tfod = ClassFactory.getInstance().createTFObjectDetector(tfodParameters, vuforia);
+        tfod.loadModelFromAsset(TFOD_MODEL_ASSET, LABELS);
+    }
+    public void extendFlipper(double speed, int angle) {
+        int newTarget;
+        int distance = 0;
+
+        if (opModeIsActive()) {
+
+
+            if(flipperState == 0 || flipperState == 1) {
+                distance = (angle);
+                flipperState = 3;
+            }
+            /*
+            else if(flipperState == 1) {
+                distance = state2Position;
+                flipperState = 2;
+            }
+            else if(flipperState == 2) {
+                distance = state3Position;
+                flipperState = 3;
+            }
+
+             */
+            else {
+                distance = angle;
+                flipperState = 3;
+            }
+            newTarget = (int)(distance * ROTATOR_COUNTERS_PER_DEGREE);
+
+            robot.flipper.setTargetPosition(newTarget);
+            robot.flipper.setPower(Math.abs(speed));
+            //robot.flipper.setPower(0);
+            //robot.flipper.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        }
+    }
+    public void retractFlipper(double speed) {
+        int newTarget;
+        int distance=0;
+
+        if (opModeIsActive()) {
+
+            if(flipperState == 3 || flipperState == 1) {
+                distance = (state0Position);
+                flipperState = 0;
+            }
+            /*
+            else if(flipperState == 2) {
+                distance = state1Position;
+                flipperState = 1;
+            }
+            else if(flipperState == 1) {
+                distance = state0Position;
+                flipperState = 0;
+            }
+             */
+            else {
+                distance = state0Position;
+                flipperState = 0;
+            }
+
+
+            newTarget = (int)(distance * ROTATOR_COUNTERS_PER_DEGREE);
+
+            robot.flipper.setTargetPosition(newTarget);
+            robot.flipper.setPower(Math.abs(speed));
+        }
+
+    }
+    public void dropPointFlipper(double speed) {
+        int newTarget;
+        int distance=0;
+
+        if (opModeIsActive()) {
+
+            if(flipperState == 3 || flipperState == 0) {
+                distance = (state1Position);
+                flipperState = 1;
+            }
+            /*
+            else if(flipperState == 2) {
+                distance = state1Position;
+                flipperState = 1;
+            }
+            else if(flipperState == 1) {
+                distance = state0Position;
+                flipperState = 0;
+            }
+             */
+            else {
+                distance = state1Position;
+                flipperState = 1;
+            }
+
+
+            newTarget = (int)(distance * ROTATOR_COUNTERS_PER_DEGREE);
+
+            robot.flipper.setTargetPosition(newTarget);
+            robot.flipper.setPower(Math.abs(speed));
+        }
+    }
+    public void closeClaw(){
+        robot.claw.setPosition(CLAW_CLOSED_POSITION);
+    }
+    public void openClaw() {
+        robot.claw.setPosition(CLAW_OPENED_POSITION);
+    }
+    public void closeTurner(){
+        robot.turner.setPosition(TURNER_COLLECT_POSITION);
+    }
+    public void openTurner() {
+        robot.turner.setPosition(TURNER_DROP_POSITION);
     }
 }

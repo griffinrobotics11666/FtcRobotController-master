@@ -52,7 +52,7 @@ import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
 
 import java.util.List;
 import java.util.Locale;
-
+//ONE WHEEL AWAY FROM LINE
 @com.qualcomm.robotcore.eventloop.opmode.Autonomous(name="BW_SCAN", group="Pushbot")
 //@Disabled
 public class A_BW_Scan extends LinearOpMode {
@@ -66,8 +66,8 @@ public class A_BW_Scan extends LinearOpMode {
     int ROTATOR_COUNTERS_PER_DEGREE = 7;
     int flipperState = 0;
     int state0Position = 0;
-    public static int state1Position = 70;
-    int state2Position = 85;
+    public static int state1Position = 65;
+    int state2Position = 90;
     public static int state3Position = 125;
     public static double CLAW_CLOSED_POSITION=1; //Top Bucket
     public static double CLAW_OPENED_POSITION=.7;
@@ -286,12 +286,12 @@ public class A_BW_Scan extends LinearOpMode {
             //gyroDrive(.5,5,0);
         }
         else{
-            gyroTurn(.5,-30);
+            gyroTurn(.5,-27);
             extendFlipper(1,state1Position);
-            gyroDrive(.5,18,-30);
+            gyroDrive(.5,17.7,-27);
             openClaw();
             sleep(2000);
-            gyroDrive(.5,-18,-30);
+            gyroDrive(.5,-17.7,-27);
             closeClaw();
             gyroTurn(.5,90);
             gyroStrafe(.5,-10,90);
