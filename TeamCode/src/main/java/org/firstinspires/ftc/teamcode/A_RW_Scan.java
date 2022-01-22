@@ -66,7 +66,7 @@ public class A_RW_Scan extends LinearOpMode {
     int ROTATOR_COUNTERS_PER_DEGREE = 7;
     int flipperState = 0;
     int state0Position = 0;
-    public static int state1Position = 70;
+    public static int state1Position = 65;
     int state2Position = 85;
     public static int state3Position = 125;
     public static double CLAW_CLOSED_POSITION=1; //Top Bucket
@@ -212,7 +212,7 @@ public class A_RW_Scan extends LinearOpMode {
         if (opModeIsActive()) {
             runtime.reset();
             //Look for the duck for 5 seconds
-            while (runtime.milliseconds()<5000) {
+            while (runtime.milliseconds()<3000) {
                 if (tfod != null) {
                     // getUpdatedRecognitions() will return null if no new information is available since
                     // the last time that call was made.
@@ -263,9 +263,9 @@ public class A_RW_Scan extends LinearOpMode {
             closeTurner();
             gyroDrive(.5,-23,30);
             gyroTurn(.5,-90);
+            retractFlipper(1);
             gyroStrafe(.5,10,-90);
             gyroDrive(.5,40, -90);
-            retractFlipper(1);
         }
         else if(duckLocation.equals("middle")){
             gyroTurn(.5,25);
@@ -278,25 +278,22 @@ public class A_RW_Scan extends LinearOpMode {
             closeClaw();
             closeTurner();
             gyroTurn(.5,-90);
+            retractFlipper(1);
             gyroStrafe(.5,10,-90);
             gyroDrive(.5,40, -90);
-            retractFlipper(1);
-
-
-            //gyroDrive(.5,5,0);
         }
         else{
-            gyroTurn(.5,20);
+            gyroTurn(.5,18);
             extendFlipper(1,state1Position);
-            gyroDrive(.5,16,20);
+            gyroDrive(.5,16,18);
             openClaw();
             sleep(2000);
-            gyroDrive(.5,-16,20);
+            gyroDrive(.5,-16,18);
             closeClaw();
             gyroTurn(.5,-90);
+            retractFlipper(1);
             gyroStrafe(.5,15,-90);
             gyroDrive(.5,40, -90);
-            retractFlipper(1);
         }
 
 

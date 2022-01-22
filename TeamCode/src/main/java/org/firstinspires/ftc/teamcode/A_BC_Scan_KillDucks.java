@@ -67,7 +67,7 @@ public class A_BC_Scan_KillDucks extends LinearOpMode {
     int ROTATOR_COUNTERS_PER_DEGREE = 7;
     int flipperState = 0;
     int state0Position = 0;
-    public static int state1Position = 70;
+    public static int state1Position = 65;
     int state2Position = 85;
     public static int state3Position = 125;
     public static double CLAW_CLOSED_POSITION=1; //Top Bucket
@@ -110,7 +110,7 @@ public class A_BC_Scan_KillDucks extends LinearOpMode {
             "Duck",
             "Marker"
     };
-    String duckLocation = "left";
+    String duckLocation = "right";
     /*
      * IMPORTANT: You need to obtain your own license key to use Vuforia. The string below with which
      * 'parameters.vuforiaLicenseKey' is initialized is for illustration only, and will not function.
@@ -213,7 +213,7 @@ public class A_BC_Scan_KillDucks extends LinearOpMode {
         if (opModeIsActive()) {
             runtime.reset();
             //Look for the duck for 5 seconds
-            while (runtime.milliseconds()<5000) {
+            while (runtime.milliseconds()<3000) {
                 if (tfod != null) {
                     // getUpdatedRecognitions() will return null if no new information is available since
                     // the last time that call was made.
@@ -231,14 +231,14 @@ public class A_BC_Scan_KillDucks extends LinearOpMode {
                             if(recognition.getLabel().equals("Duck")){
                                 double duckPosition = recognition.getLeft();
 
-                                if (duckPosition > 200){
-                                    duckLocation = "right";
+                                if (duckPosition < 200){
+                                    duckLocation = "left";
                                 }
-                                else if (duckPosition < 200){
+                                else if (duckPosition > 200){
                                     duckLocation = "middle";
                                 }
                                 else {
-                                    duckLocation = "left";
+                                    duckLocation = "right";
                                 }
                             }
 
@@ -264,61 +264,67 @@ public class A_BC_Scan_KillDucks extends LinearOpMode {
             closeTurner();
             gyroDrive(.5,-12,30);
             gyroTurn(.5,90);
-            gyroDrive(.5,-28,90);//-26
-            gyroStrafe(1,-10,90);//-5
-            //gyroDrive(.5,-3,-90);
-            //gyroStrafe(1,3,-90);
-            robot.carousel.setPower(.7);
+            gyroDrive(.5,-30,90);
+            gyroTurn(.5,0);
+            sleep(500);
+            gyroStrafe(.5,13,0);
+            gyroDrive(.5,-7,0);
+            robot.carousel.setPower(-.7);
             sleep(4000);
             robot.carousel.setPower(0);
-            gyroStrafe(.5,-18,-90);
-            //gyroStrafe(.5,-20,-90);
-            gyroDrive(1,110,-90);
             retractFlipper(1);
+            gyroStrafe(.5,-17,90);
+            //gyroStrafe(.5,-20,-90);
+            gyroDrive(1,120,90);
         }
         else if(duckLocation.equals("middle")){
-            gyroTurn(.5,-30);
+            gyroTurn(.5,30);
             extendFlipper(1,state2Position);
-            gyroDrive(.5,17,-25);
+            gyroDrive(.5,17,30);
             openClaw();
             openTurner();
             sleep(2000);
-            gyroDrive(.5,-16,-25);
             closeClaw();
             closeTurner();
-            gyroTurn(.5,-90);
-            //sleep(10000);
-            //
-            gyroDrive(.5,-32,-90);
-            //
-            gyroStrafe(.5,2,-90);
-            //gyroDrive(.5,-20, -90);
-            //gyroStrafe(.5,-3,-90);
-            //gyroDrive(.5,-2,-90);
-            robot.carousel.setPower(.7);
+            gyroDrive(.5,-7,30);
+            gyroTurn(.5,90);
+            gyroDrive(.5,-30,90);
+            gyroTurn(.5,0);
+            sleep(500);
+            gyroStrafe(.5,13,0);
+            gyroDrive(.5,-5,0);
+            robot.carousel.setPower(-.7);
             sleep(4000);
             robot.carousel.setPower(0);
-            gyroStrafe(.5,-18,-90);
-            gyroDrive(1,110,-90);
             retractFlipper(1);
+            gyroStrafe(.5,-17,90);
+            //gyroStrafe(.5,-20,-90);
+            gyroDrive(1,125,90);
         }
+
         else{
-            gyroTurn(.5,-15);
+            gyroTurn(.5,30);
             extendFlipper(1,state1Position);
-            gyroDrive(1,16,-15);
+            gyroDrive(.5,17,30);
             openClaw();
+            openTurner();
             sleep(2000);
-            gyroDrive(1,-16,-15);
             closeClaw();
-            gyroTurn(.5,-90);
-            gyroDrive(.5,-32,-90);
-            gyroStrafe(.5,2,-90);
-            robot.carousel.setPower(.7);
+            closeTurner();
+            gyroDrive(.5,-7,30);
+            gyroTurn(.5,90);
+            gyroDrive(.5,-30,90);
+            gyroTurn(.5,0);
+            sleep(500);
+            gyroStrafe(.5,13,0);
+            gyroDrive(.5,-5,0);
+            robot.carousel.setPower(-.7);
             sleep(4000);
             robot.carousel.setPower(0);
-            gyroStrafe(.5,-18,-90);
-            gyroDrive(1,110,-90);
             retractFlipper(1);
+            gyroStrafe(.5,-17,90);
+            //gyroStrafe(.5,-20,-90);
+            gyroDrive(1,125,90);
         }
 
 

@@ -212,7 +212,7 @@ public class A_BW_Scan extends LinearOpMode {
         if (opModeIsActive()) {
             runtime.reset();
             //Look for the duck for 5 seconds
-            while (runtime.milliseconds()<5000) {
+            while (runtime.milliseconds()<3000) {
                 if (tfod != null) {
                     // getUpdatedRecognitions() will return null if no new information is available since
                     // the last time that call was made.
@@ -263,9 +263,9 @@ public class A_BW_Scan extends LinearOpMode {
             closeTurner();
             gyroDrive(.5,-23,-30);
             gyroTurn(.5,90);
+            retractFlipper(1);
             gyroStrafe(.5,-10,90);
             gyroDrive(.5,40, 90);
-            retractFlipper(1);
         }
         else if(duckLocation.equals("middle")){
             gyroTurn(.5,-30);
@@ -278,25 +278,22 @@ public class A_BW_Scan extends LinearOpMode {
             closeClaw();
             closeTurner();
             gyroTurn(.5,90);
+            retractFlipper(1);
             gyroStrafe(.5,-10,90);
             gyroDrive(.5,40, 90);
-            retractFlipper(1);
-
-
-            //gyroDrive(.5,5,0);
         }
         else{
             gyroTurn(.5,-27);
             extendFlipper(1,state1Position);
-            gyroDrive(.5,17.7,-27);
+            gyroDrive(.5,17.3,-27);
             openClaw();
             sleep(2000);
             gyroDrive(.5,-17.7,-27);
             closeClaw();
             gyroTurn(.5,90);
+            retractFlipper(1);
             gyroStrafe(.5,-10,90);
             gyroDrive(.5,40, 90);
-            retractFlipper(1);
         }
 
 
