@@ -46,8 +46,9 @@ public class DrivercontrolLinear extends LinearOpMode
     int ROTATOR_COUNTERS_PER_DEGREE = 7;
     int flipperState = 0;
     int state0Position = 0;
-    public static int state1Position = 55;
+    public static int state1Position = 65;
     int state2Position = 85;
+    int carouselState = 0;
     public static int state3Position = 125;
     public static double CLAW_CLOSED_POSITION=1; //Top Bucket
     public static double CLAW_OPENED_POSITION=.7;
@@ -64,7 +65,9 @@ public class DrivercontrolLinear extends LinearOpMode
     double lastFlipperExtendTime = 0;
     double delayTime = 250;
     double slowFactor = 3;
-    public static double carouselSpeed = 1;
+    public static double carouselSpeed = 0;
+    int carouselDirection = 1;
+    double carouselPower = 0;
 
     private ElapsedTime runtime = new ElapsedTime(); //clock
 
@@ -104,6 +107,43 @@ public class DrivercontrolLinear extends LinearOpMode
                 robot.turner.se                                     tPosition(TURNER_COLLECT_POSITION);
             }
             */
+            if (gamepad1.right_bumper){
+                carouselState = 0;
+            }
+
+            if (carouselState == 0){
+                carouselPower = 0;
+                if (gamepad1.right_trigger>0){
+                    carouselState = 1;
+                    runtime.reset();
+                    carouselDirection = 1;
+                }
+                if (gamepad1.left_trigger>0){
+                    carouselState = 1;
+                    runtime.reset();
+                    carouselDirection = -1;
+                }
+            }
+            else if (carouselState == 1){
+                carouselPower = .5*carouselDirection;
+                if (runtime.milliseconds()>800){
+                    carouselState = 2;
+                }
+            }
+            else if (carouselState == 2){
+                carouselPower = 1*carouselDirection;
+                if (runtime.milliseconds()>1500){
+                    carouselState = 0;
+                }
+            }
+            else{
+                carouselState = 0;
+                carouselPower = 0;
+            }
+
+
+
+            /*
             carouselPower = gamepad1.right_trigger - gamepad1.left_trigger;
             if (gamepad1.left_bumper && !gamepad1.right_bumper) {
                 armExtendorPower = -1;
@@ -114,6 +154,8 @@ public class DrivercontrolLinear extends LinearOpMode
             } else {
                 armExtendorPower = 0;
             }
+            */
+
             /*if (gamepad1.y) {
                 robot.armExtender.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                 robot.armExtender.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -181,6 +223,8 @@ public class DrivercontrolLinear extends LinearOpMode
             robot.rightFrontDrive.setPower(rightFrontPower);
             robot.rightBackDrive.setPower(rightBackPower);
 
+            robot.carousel.setPower(carouselPower);
+            /*
             if(carouselPower>0){
                 robot.carousel.setPower(carouselSpeed);
             }
@@ -190,9 +234,11 @@ public class DrivercontrolLinear extends LinearOpMode
             else {
                 robot.carousel.setPower(0);
             }
+            */
 
 
-            robot.armExtender.setPower(armExtendorPower);
+
+
             telemetry.addData("Status", "Run Time: %.2f", runtime.seconds());
             telemetry.addData("Motors", "left (%.2f), right (%.2f)", leftFrontPower, rightFrontPower);
             telemetry.addData("clawPosition",  "at %.2f :", robot.claw.getPosition());
