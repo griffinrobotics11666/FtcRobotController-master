@@ -66,7 +66,8 @@ public class A_RC_Scan_KillDucks extends LinearOpMode {
     int ROTATOR_COUNTERS_PER_DEGREE = 7;
     int flipperState = 0;
     int state0Position = 0;
-    public static int state1Position = 70;
+    public static int state1Position = 60;
+
     int state2Position = 85;
     public static int state3Position = 125;
     public static double CLAW_CLOSED_POSITION=1; //Top Bucket
@@ -212,7 +213,7 @@ public class A_RC_Scan_KillDucks extends LinearOpMode {
         if (opModeIsActive()) {
             runtime.reset();
             //Look for the duck for 5 seconds
-            while (runtime.milliseconds()<3000) {
+            while (runtime.milliseconds()<2000) {
                 if (tfod != null) {
                     // getUpdatedRecognitions() will return null if no new information is available since
                     // the last time that call was made.
@@ -267,7 +268,7 @@ public class A_RC_Scan_KillDucks extends LinearOpMode {
             gyroStrafe(1,2,-90);//-5
             //gyroDrive(.5,-3,-90);
             //gyroStrafe(1,3,-90);
-            robot.carousel.setPower(.7);
+            robot.carousel.setPower(.5);
             sleep(4000);
             robot.carousel.setPower(0);
             retractFlipper(1);
@@ -294,7 +295,7 @@ public class A_RC_Scan_KillDucks extends LinearOpMode {
             //gyroDrive(.5,-20, -90);
             //gyroStrafe(.5,-3,-90);
             //gyroDrive(.5,-2,-90);
-            robot.carousel.setPower(.7);
+            robot.carousel.setPower(.5);
             sleep(4000);
             robot.carousel.setPower(0);
             retractFlipper(1);
@@ -302,7 +303,7 @@ public class A_RC_Scan_KillDucks extends LinearOpMode {
             gyroDrive(1,110,-90);
         }
         else{
-            gyroTurn(.5,-15);
+            gyroTurn(.5,-20);
             extendFlipper(1,state1Position);
             gyroDrive(1,16,-15);
             openClaw();
@@ -312,7 +313,7 @@ public class A_RC_Scan_KillDucks extends LinearOpMode {
             gyroTurn(.5,-90);
             gyroDrive(.5,-32,-90);
             gyroStrafe(.5,2,-90);
-            robot.carousel.setPower(.7);
+            robot.carousel.setPower(.5);
             sleep(4000);
             robot.carousel.setPower(0);
             retractFlipper(1);

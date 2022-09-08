@@ -47,7 +47,7 @@ public class DrivercontrolLinear extends LinearOpMode
     int flipperState = 0;
     int state0Position = 0;
     public static int state1Position = 65;
-    int state2Position = 85;
+    int state2Position = 50;
     int carouselState = 0;
     public static int state3Position = 125;
     public static double CLAW_CLOSED_POSITION=1; //Top Bucket
@@ -107,7 +107,7 @@ public class DrivercontrolLinear extends LinearOpMode
                 robot.turner.se                                     tPosition(TURNER_COLLECT_POSITION);
             }
             */
-            if (gamepad1.right_bumper){
+            if (gamepad1.left_bumper){
                 carouselState = 0;
             }
 
@@ -125,14 +125,14 @@ public class DrivercontrolLinear extends LinearOpMode
                 }
             }
             else if (carouselState == 1){
-                carouselPower = .5*carouselDirection;
-                if (runtime.milliseconds()>800){
+                carouselPower = .6*carouselDirection;
+                if (runtime.milliseconds()>2300){
                     carouselState = 2;
                 }
             }
             else if (carouselState == 2){
                 carouselPower = 1*carouselDirection;
-                if (runtime.milliseconds()>1500){
+                if (runtime.milliseconds()>2300){
                     carouselState = 0;
                 }
             }
@@ -176,8 +176,11 @@ public class DrivercontrolLinear extends LinearOpMode
                 lastFlipperRetractTime = runtime.milliseconds();
                 retractFlipper(1);
             }
-            if (gamepad2.x) {
+            if (gamepad2.y) {
                 dropPointFlipper(1);
+            }
+            if (gamepad2.x){
+                dropPointLowFlipper(1);
             }
             if (aCurrentState && ! aLastState) {
                 robot.claw.setPosition(CLAW_CLOSED_POSITION);
@@ -365,6 +368,38 @@ public class DrivercontrolLinear extends LinearOpMode
             else {
                 distance = state1Position;
                 flipperState = 1;
+            }
+
+
+            newTarget = (int)(distance * ROTATOR_COUNTERS_PER_DEGREE);
+
+            robot.flipper.setTargetPosition(newTarget);
+            robot.flipper.setPower(Math.abs(speed));
+        }
+    }
+    public void dropPointLowFlipper(double speed) {
+        int newTarget;
+        int distance=0;
+
+        if (opModeIsActive()) {
+
+            if(flipperState == 3 || flipperState == 0 || flipperState == 1) {
+                distance = (state2Position);
+                flipperState = 2;
+            }
+            /*
+            else if(flipperState == 2) {
+                distance = state1Position;
+                flipperState = 1;
+            }
+            else if(flipperState == 1) {
+                distance = state0Position;
+                flipperState = 0;
+            }
+             */
+            else {
+                distance = state2Position;
+                flipperState = 2;
             }
 
 

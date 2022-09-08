@@ -213,7 +213,7 @@ public class A_BC_Scan_KillDucks extends LinearOpMode {
         if (opModeIsActive()) {
             runtime.reset();
             //Look for the duck for 5 seconds
-            while (runtime.milliseconds()<3000) {
+            while (runtime.milliseconds()<1700) {
                 if (tfod != null) {
                     // getUpdatedRecognitions() will return null if no new information is available since
                     // the last time that call was made.
@@ -270,14 +270,12 @@ public class A_BC_Scan_KillDucks extends LinearOpMode {
             gyroStrafe(.5,13,0);
             gyroDrive(.5,-7,0);
             robot.carousel.setPower(-.5);
-            sleep(700);
-            robot.carousel.setPower(-.9);
-            sleep(1300);
+            sleep(4000);
+            robot.carousel.setPower(0);
 
             //robot.carousel.setPower(-.7);
             //sleep(4000);
 
-            robot.carousel.setPower(0);
             retractFlipper(1);
             gyroStrafe(.5,-17,90);
             //gyroStrafe(.5,-20,-90);
@@ -299,7 +297,7 @@ public class A_BC_Scan_KillDucks extends LinearOpMode {
             sleep(500);
             gyroStrafe(.5,13,0);
             gyroDrive(.5,-5,0);
-            robot.carousel.setPower(-.7);
+            robot.carousel.setPower(-.5);
             sleep(4000);
             robot.carousel.setPower(0);
             retractFlipper(1);
@@ -324,7 +322,7 @@ public class A_BC_Scan_KillDucks extends LinearOpMode {
             sleep(500);
             gyroStrafe(.5,13,0);
             gyroDrive(.5,-5,0);
-            robot.carousel.setPower(-.7);
+            robot.carousel.setPower(-.5);
             sleep(4000);
             robot.carousel.setPower(0);
             retractFlipper(1);
